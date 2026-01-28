@@ -1,6 +1,6 @@
-// src/hooks/useSongs.ts
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchSongs, updateSong, SongsQuery, Song } from "../api/songs";
+import { fetchSongs, updateSong } from "../api/songs";
+import type { SongsQuery, Song } from "../api/songs";
 
 export function useSongs(params: SongsQuery) {
   return useQuery({

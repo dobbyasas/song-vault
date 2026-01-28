@@ -1,6 +1,6 @@
-// src/hooks/useInfiniteSongs.ts
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { fetchSongs, SongsQuery, SongsResult } from "../api/songs";
+import { fetchSongs } from "../api/songs";
+import type { SongsQuery, SongsResult } from "../api/songs";
 
 type InfiniteSongsParams = Omit<SongsQuery, "offset">;
 
