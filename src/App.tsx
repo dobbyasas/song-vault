@@ -4,7 +4,6 @@ import { AuthCard } from "./components/AuthCard";
 import { supabase } from "./lib/supabaseClient";
 import { AddSongForm } from "./components/AddSongForm";
 import { SongsTable } from "./components/SongsTable";
-import { TestSpotifyButton } from "./components/TestSpotifyButton";
 import { PlaylistsSidebar } from "./components/PlaylistsSidebar";
 
 export default function App() {
@@ -45,7 +44,7 @@ export default function App() {
               />
 
               <div style={{ flex: 1, minWidth: 0 }}>
-                <SongsTable playlistId={selectedPlaylistId} userId={session.user.id} />
+                <SongsTable playlistId={selectedPlaylistId} />
               </div>
             </div>
           </div>

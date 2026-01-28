@@ -1,38 +1,22 @@
+// src/hooks/useInfiniteSongs.ts
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { fetchSongs } from "../api/songs";
+import { fetchSongs, SongsQuery, SongsResult } from "../api/songs";
 
-type SongsResultLike<TSong> = {
-  rows: TSong[];
-  count: number;
-};
-
-type InfiniteSongsParams = {
-  q?: string;
-  sortBy?: "name" | "artist" | "tuning" | "created_at";
-  sortDir?: "asc" | "desc";
-  limit?: number;
-  playlistId?: string | null;
-};
-
-// minimal song shape needed for the list
-type SongLike = {
-  id: string;
-};
+type InfiniteSongsParams = Omit<SongsQuery, "offset">;
 
 export function useInfiniteSongs(params: InfiniteSongsParams) {
   const limit = params.limit ?? 50;
 
-  return useInfiniteQuery<SongsResultLike<SongLike>>({
+  return useInfiniteQuery<SongsResult>({
     queryKey: ["songs_infinite", params],
     initialPageParam: 0, // page index
-    queryFn: async ({ pageParam }) => {
+    queryFn: ({ pageParam }) => {
       const page = Number(pageParam) || 0;
-      // fetchSongs returns { rows, count } already
-      return (await fetchSongs({
+      return fetchSongs({
         ...params,
         limit,
         offset: page * limit,
-      })) as SongsResultLike<SongLike>;
+      });
     },
     getNextPageParam: (lastPage, allPages) => {
       const loaded = allPages.reduce((sum, p) => sum + (p.rows?.length ?? 0), 0);

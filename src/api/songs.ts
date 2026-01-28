@@ -1,7 +1,6 @@
 // src/api/songs.ts
 import { supabase } from "../lib/supabaseClient";
 
-
 export type Song = {
   id: string;
   user_id: string;
@@ -32,12 +31,12 @@ export async function fetchSongs(params: SongsQuery): Promise<SongsResult> {
     q = "",
     sortBy = "created_at",
     sortDir = "desc",
-    limit = 100,
+    limit = 50,
     offset = 0,
     playlistId = null,
   } = params;
 
-  // If filtering by playlist, first get song ids from join table
+  // If playlist filter is active, get song ids first
   let playlistSongIds: string[] | null = null;
 
   if (playlistId) {
@@ -49,8 +48,6 @@ export async function fetchSongs(params: SongsQuery): Promise<SongsResult> {
     if (idsErr) throw idsErr;
 
     playlistSongIds = (ids ?? []).map((x: any) => x.song_id).filter(Boolean);
-
-    // Empty playlist => empty result
     if (playlistSongIds.length === 0) return { rows: [], count: 0 };
   }
 

@@ -1,3 +1,4 @@
+// src/components/SongsTable.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Song } from "../api/songs";
 import { useUpdateSong } from "../hooks/useSongs";
@@ -33,7 +34,7 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
       q,
       sortBy,
       sortDir,
-      limit: 50, // page size
+      limit: 50,
       playlistId,
     }),
     [q, sortBy, sortDir, playlistId]
@@ -46,16 +47,9 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
   const { data: playlists } = usePlaylists();
   const addToPl = useAddSongToPlaylist();
 
-  const rows = useMemo(() => {
-    const pages = inf.data?.pages ?? [];
-    return pages.flatMap((p) => p.rows ?? []);
-  }, [inf.data]);
-
+  const rows = useMemo(() => (inf.data?.pages ?? []).flatMap((p) => p.rows ?? []), [inf.data]);
   const totalCount = inf.data?.pages?.[0]?.count ?? 0;
-  const isLoading = inf.isLoading;
-  const error = inf.error;
 
-  // Infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -84,8 +78,8 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
     }
   }
 
-  if (isLoading) return <div style={{ marginTop: 16 }}>Loading songs…</div>;
-  if (error) return <pre style={{ marginTop: 16 }}>{String(error)}</pre>;
+  if (inf.isLoading) return <div style={{ marginTop: 16 }}>Loading songs…</div>;
+  if (inf.error) return <pre style={{ marginTop: 16 }}>{String(inf.error)}</pre>;
 
   return (
     <div style={{ marginTop: 16 }} className="fade-in">
@@ -128,11 +122,8 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
                   onSave={(patch) => update.mutate({ id: s.id, patch })}
                   onAddToPlaylist={(playlist_id) => addToPl.mutate({ playlist_id, song_id: s.id })}
                   onDelete={() => {
-                    if (playlistId) {
-                      removeFromPlaylist.mutate({ playlist_id: playlistId, song_id: s.id });
-                    } else {
-                      delSong.mutate(s.id);
-                    }
+                    if (playlistId) removeFromPlaylist.mutate({ playlist_id: playlistId, song_id: s.id });
+                    else delSong.mutate(s.id);
                   }}
                   saving={update.isPending}
                   deleting={playlistId ? removeFromPlaylist.isPending : delSong.isPending}
@@ -149,15 +140,10 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
           </tbody>
         </table>
 
-        {/* Sentinel for infinite scroll */}
         <div ref={sentinelRef} style={{ height: 1 }} />
 
-        {inf.isFetchingNextPage && (
-          <div style={{ padding: 12, opacity: 0.8, fontSize: 13 }}>Loading more…</div>
-        )}
-        {!inf.hasNextPage && rows.length > 0 && (
-          <div style={{ padding: 12, opacity: 0.6, fontSize: 13 }}></div>
-        )}
+        {inf.isFetchingNextPage && <div style={{ padding: 12, opacity: 0.8, fontSize: 13 }}>Loading more…</div>}
+        {!inf.hasNextPage && rows.length > 0 && <div style={{ padding: 12, opacity: 0.6, fontSize: 13 }}>End of list.</div>}
       </div>
 
       {(update.error || delSong.error || addToPl.error || removeFromPlaylist.error) && (
@@ -265,41 +251,20 @@ function SongRow({
     <tr className="tr">
       <td className="td">
         <div style={{ position: "relative", width: 56, height: 56 }}>
-          <img
-            src={song.image_url || FALLBACK_COVER}
-            width={56}
-            height={56}
-            loading="lazy"
-            decoding="async"
-            className="cover"
-          />
+          <img src={song.image_url || FALLBACK_COVER} width={56} height={56} loading="lazy" decoding="async" className="cover" />
           {!song.image_url && (
             <div
               className="pulse"
               title="Matching Spotify…"
-              style={{
-                position: "absolute",
-                inset: -6,
-                borderRadius: 16,
-                pointerEvents: "none",
-                opacity: 0.85,
-              }}
+              style={{ position: "absolute", inset: -6, borderRadius: 16, pointerEvents: "none", opacity: 0.85 }}
             />
           )}
         </div>
       </td>
 
-      <td className="td">
-        {edit ? <input className="input" value={name} onChange={(e) => setName(e.target.value)} /> : song.name}
-      </td>
-
-      <td className="td">
-        {edit ? <input className="input" value={artist} onChange={(e) => setArtist(e.target.value)} /> : song.artist}
-      </td>
-
-      <td className="td">
-        {edit ? <input className="input" value={tuning} onChange={(e) => setTuning(e.target.value)} /> : song.tuning ?? ""}
-      </td>
+      <td className="td">{edit ? <input className="input" value={name} onChange={(e) => setName(e.target.value)} /> : song.name}</td>
+      <td className="td">{edit ? <input className="input" value={artist} onChange={(e) => setArtist(e.target.value)} /> : song.artist}</td>
+      <td className="td">{edit ? <input className="input" value={tuning} onChange={(e) => setTuning(e.target.value)} /> : song.tuning ?? ""}</td>
 
       <td className="td" style={{ opacity: 0.75, fontSize: 13 }}>
         {new Date(song.created_at).toLocaleString()}
@@ -335,7 +300,6 @@ function SongRow({
                   Edit
                 </button>
 
-                {/* Optional: hide add-to-playlist inside playlist view */}
                 {!currentPlaylistId && (
                   <>
                     <button
