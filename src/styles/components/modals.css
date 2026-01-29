@@ -1,0 +1,64 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
+  z-index: var(--z-overlay);
+  animation: overlayFadeIn 0.3s ease;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  width: min(560px, calc(100vw - 32px));
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-6);
+  animation: modalZoomIn 0.4s var(--ease-standard);
+}
+
+@keyframes modalZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-title {
+  font-weight: 700;
+  font-size: var(--text-xl);
+  margin: 0 0 var(--space-5);
+  color: var(--text-primary);
+  animation: fadeUp 0.4s var(--ease-standard);
+}
+
+.modal-body {
+  padding: 0 0 var(--space-5);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-5) 0 0;
+  border-top: 1px solid var(--border);
+}
+
+.modal-error {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--pink);
+  font-weight: 500;
+  animation: shake 0.5s ease, errorGlow 1.5s ease-in-out infinite;
+}

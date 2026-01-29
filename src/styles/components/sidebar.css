@@ -1,0 +1,118 @@
+.sidebar {
+  width: 280px;
+  flex: 0 0 280px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp 0.6s var(--ease-standard);
+}
+
+.sidebar-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.sidebar-title {
+  font-weight: 700;
+  font-size: var(--text-md);
+  color: var(--text-primary);
+}
+
+.sidebar-new {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.sidebar-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-sep {
+  height: 1px;
+  background: var(--border);
+  margin: var(--space-4) 0;
+  animation: expandWidth 0.8s ease;
+}
+
+@keyframes expandWidth {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+.sidebar-muted {
+  opacity: 0.6;
+  font-size: var(--text-sm);
+  padding: 10px 6px;
+  color: var(--text-muted);
+}
+
+.sidebar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sidebar-item {
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--speed-normal) var(--ease-standard);
+  font-size: var(--text-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: var(--purple);
+  transform: scaleY(0);
+  transition: transform var(--speed-normal) var(--ease-standard);
+}
+
+.sidebar-item:hover::before {
+  transform: scaleY(1);
+}
+
+.sidebar-item:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border);
+  transform: translateX(8px);
+}
+
+.sidebar-row.active .sidebar-item,
+.sidebar-item.active {
+  background: var(--bg-elevated);
+  border-color: var(--purple);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--glow-purple);
+}
+
+.sidebar-row.active .sidebar-item::before,
+.sidebar-item.active::before {
+  transform: scaleY(1);
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+}
