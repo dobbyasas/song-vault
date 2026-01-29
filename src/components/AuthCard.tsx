@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 type Mode = "login" | "register";
@@ -7,6 +7,7 @@ export function AuthCard() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [isAnimating, setIsAnimating] = useState(false);
   const [lineCount, setLineCount] = useState(5);
 
@@ -14,48 +15,67 @@ export function AuthCard() {
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
+  const timeoutRef = useRef<number | null>(null);
+
   const title = useMemo(() => (mode === "login" ? "SIGN IN" : "CREATE ACCOUNT"), [mode]);
   const subtitle = useMemo(
     () => (mode === "login" ? "Enter the vault." : "Generate a new identity."),
     [mode]
   );
 
+  const logoWidth = useMemo(() => Math.max(80, (lineCount - 1) * 8 + 20), [lineCount]);
+
+  const barMap = useMemo(() => {
+    const arr = Array.from({ length: lineCount }, (_, i) => ((i * 3 + 1) % 8) + 1);
+    return arr;
+  }, [lineCount]);
+
   function handleLogoClick() {
     setIsAnimating(true);
-    setLineCount(prev => Math.min(prev + 3, 50)); // Add 3 lines per click, max 50
-    setTimeout(() => setIsAnimating(false), 5000);
+    setLineCount((prev) => Math.min(prev + 3, 50));
+
+    if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    timeoutRef.current = window.setTimeout(() => setIsAnimating(false), 5000);
   }
 
-  // Generate lines dynamically based on lineCount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
   const generateLines = () => {
-    const lines = [];
-    const spacing = 8; // Fixed spacing between lines
+    const lines: JSX.Element[] = [];
+    const spacing = 8;
     const totalWidth = (lineCount - 1) * spacing;
-    const startX = 32 - (totalWidth / 2); // Center the lines
-    
+
+    const centerX = logoWidth / 2;
+    const startX = centerX - totalWidth / 2;
+
+    const heights = [
+      { y1: 24, y2: 56 },
+      { y1: 20, y2: 60 },
+      { y1: 12, y2: 68 },
+      { y1: 26, y2: 54 },
+      { y1: 16, y2: 64 },
+      { y1: 22, y2: 58 },
+      { y1: 18, y2: 62 },
+      { y1: 14, y2: 66 },
+    ];
+
     for (let i = 0; i < lineCount; i++) {
-      const x = startX + (i * spacing);
-      // Random heights for variety
-      const heights = [
-        { y1: 24, y2: 40 },
-        { y1: 20, y2: 44 },
-        { y1: 12, y2: 52 },
-        { y1: 26, y2: 38 },
-        { y1: 16, y2: 48 },
-        { y1: 22, y2: 42 },
-        { y1: 18, y2: 46 },
-        { y1: 14, y2: 50 },
-      ];
-      const height = heights[i % heights.length];
-      
+      const x = startX + i * spacing;
+      const h = heights[i % heights.length];
+      const barClass = barMap[i] ?? ((i % 8) + 1);
+
       lines.push(
         <line
           key={i}
-          className={`sound-bar bar-${(i % 8) + 1} line-appear`}
+          className={`sound-bar bar-${barClass} line-appear`}
           x1={x}
-          y1={height.y1}
+          y1={h.y1}
           x2={x}
-          y2={height.y2}
+          y2={h.y2}
           stroke="#ffffff"
           strokeWidth="3"
           strokeLinecap="round"
@@ -63,12 +83,9 @@ export function AuthCard() {
         />
       );
     }
-    
+
     return lines;
   };
-
-  // Calculate the width needed for the logo based on line count
-  const logoWidth = Math.max(80, (lineCount - 1) * 8 + 20);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -109,26 +126,34 @@ export function AuthCard() {
       <div className="auth-grid">
         {/* Left: brand */}
         <div className="auth-brand fade-in">
-          <div 
-            className={`brand-badge pulse ${isAnimating ? 'animating' : ''}`}
+          <div
+            className={`brand-badge pulse ${isAnimating ? "animating" : ""}`}
             onClick={handleLogoClick}
-            style={{ 
-              cursor: 'pointer',
-              width: `${logoWidth}px`,
-              transition: 'width 0.5s ease'
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") handleLogoClick();
             }}
+            style={{
+              cursor: "pointer",
+              width: `${logoWidth}px`,
+              transition: "width 0.5s ease",
+            }}
+            aria-label="Animate logo"
+            title="Click me"
           >
-            <svg 
-              width={logoWidth} 
-              height="80" 
-              viewBox="0 0 64 64" 
-              fill="none" 
+            <svg
+              width={logoWidth}
+              height={80}
+              viewBox={`0 0 ${logoWidth} 80`}
+              fill="none"
               xmlns="http://www.w3.org/2000/svg"
               preserveAspectRatio="xMidYMid meet"
             >
               {generateLines()}
             </svg>
           </div>
+
           <h1 className="brand-title">SONG VAULT</h1>
           <p className="brand-sub">
             A private library for riffs, tunings, and obsessions.
@@ -198,6 +223,7 @@ export function AuthCard() {
                 <span>Email</span>
                 <input
                   className="input"
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tofi@night.city"
@@ -242,9 +268,7 @@ export function AuthCard() {
               </div>
             </form>
 
-            <div className="auth-hint">
-              Tip: Use a password manager. Your vault deserves it.
-            </div>
+            <div className="auth-hint">Tip: Use a password manager. Your vault deserves it.</div>
           </div>
         </div>
       </div>

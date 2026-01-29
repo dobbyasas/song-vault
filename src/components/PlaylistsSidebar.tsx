@@ -1,4 +1,3 @@
-// src/components/PlaylistsSidebar.tsx
 import { useMemo, useState } from "react";
 import { useCreatePlaylist, useDeletePlaylist, usePlaylists } from "../hooks/usePlaylists";
 

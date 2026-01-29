@@ -8,7 +8,6 @@ export function TestSpotifyButton() {
   async function run() {
     setOut("Running…");
 
-    // pick 1 song missing an image
     const { data: song, error: selErr } = await supabase
       .from("songs")
       .select("id,name,artist,image_url,spotify_id")
@@ -32,7 +31,6 @@ export function TestSpotifyButton() {
 
       setOut(`OK: ${JSON.stringify(data)}\n`);
 
-      // read back the row
       const { data: updated, error: readErr } = await supabase
         .from("songs")
         .select("id,name,artist,image_url,spotify_id")

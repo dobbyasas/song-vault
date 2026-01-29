@@ -1,4 +1,3 @@
-// src/api/playlists.ts
 import { supabase } from "../lib/supabaseClient";
 
 export type Playlist = {

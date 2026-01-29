@@ -1,4 +1,3 @@
-// src/api/songs.ts
 import { supabase } from "../lib/supabaseClient";
 
 export type Song = {
@@ -36,7 +35,6 @@ export async function fetchSongs(params: SongsQuery): Promise<SongsResult> {
     playlistId = null,
   } = params;
 
-  // If playlist filter is active, get song ids first
   let playlistSongIds: string[] | null = null;
 
   if (playlistId) {

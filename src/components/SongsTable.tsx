@@ -1,4 +1,3 @@
-// src/components/SongsTable.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Song } from "../api/songs";
 import { useUpdateSong } from "../hooks/useSongs";

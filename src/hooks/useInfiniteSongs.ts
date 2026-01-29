@@ -9,7 +9,7 @@ export function useInfiniteSongs(params: InfiniteSongsParams) {
 
   return useInfiniteQuery<SongsResult>({
     queryKey: ["songs_infinite", params],
-    initialPageParam: 0, // page index
+    initialPageParam: 0,
     queryFn: ({ pageParam }) => {
       const page = Number(pageParam) || 0;
       return fetchSongs({
@@ -22,7 +22,7 @@ export function useInfiniteSongs(params: InfiniteSongsParams) {
       const loaded = allPages.reduce((sum, p) => sum + (p.rows?.length ?? 0), 0);
       const total = lastPage.count ?? 0;
       if (loaded >= total) return undefined;
-      return allPages.length; // next page index
+      return allPages.length;
     },
     staleTime: 30_000,
   });

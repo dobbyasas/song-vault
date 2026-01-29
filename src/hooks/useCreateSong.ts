@@ -14,10 +14,8 @@ export function useCreateSong() {
 
   return useMutation({
     mutationFn: async (payload: NewSong) => {
-      // 1) Insert song
       const song = await createSong(payload);
 
-      // 2) Kick off Spotify resolve (non-blocking)
       callFunction("resolve_spotify", {
         song_id: song.id,
         name: song.name,
@@ -25,7 +23,6 @@ export function useCreateSong() {
       })
         .then(() => qc.invalidateQueries({ queryKey: ["songs"] }))
         .catch((e) => {
-          // keep it quiet, but log for debugging
           console.warn("resolve_spotify failed:", e);
         });
 

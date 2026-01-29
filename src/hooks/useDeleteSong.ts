@@ -1,4 +1,3 @@
-// src/hooks/useDeleteSong.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteSong } from "../api/songs";
 
