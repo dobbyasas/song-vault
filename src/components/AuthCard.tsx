@@ -1,70 +1,182 @@
-import { useState } from "react";
-import { signIn, signUp } from "../lib/auth";
+import { useMemo, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
+
+type Mode = "login" | "register";
 
 export function AuthCard() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const title = useMemo(() => (mode === "login" ? "SIGN IN" : "CREATE ACCOUNT"), [mode]);
+  const subtitle = useMemo(
+    () => (mode === "login" ? "Enter the vault." : "Generate a new identity."),
+    [mode]
+  );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setErr(null);
     setMsg(null);
-    setBusy(true);
+
+    const e1 = email.trim();
+    if (!e1) return setErr("Email is required.");
+    if (password.length < 6) return setErr("Password must be at least 6 characters.");
+
+    setLoading(true);
     try {
-      if (mode === "signup") {
-        await signUp(email.trim(), password);
-        setMsg("Signed up! Check your email if confirmation is enabled.");
+      if (mode === "login") {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: e1,
+          password,
+        });
+        if (error) throw error;
       } else {
-        await signIn(email.trim(), password);
+        const { error } = await supabase.auth.signUp({
+          email: e1,
+          password,
+        });
+        if (error) throw error;
+
+        // Depending on Supabase email confirmation settings, user may need to confirm.
+        setMsg("Account created. If email confirmation is enabled, check your inbox.");
+        setMode("login");
       }
-    } catch (err: any) {
-      setMsg(err?.message ?? "Something went wrong.");
+    } catch (e: any) {
+      setErr(e?.message ?? "Auth failed.");
     } finally {
-      setBusy(false);
+      setLoading(false);
     }
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: "80px auto", padding: 20, border: "1px solid #ddd", borderRadius: 12 }}>
-      <h2 style={{ marginTop: 0 }}>{mode === "signin" ? "Sign in" : "Create account"}</h2>
+    <div className="cyber-shell">
+      <div className="auth-grid">
+        {/* Left: brand */}
+        <div className="auth-brand fade-in">
+          <div className="brand-badge pulse">SV</div>
+          <h1 className="brand-title">SONG VAULT</h1>
+          <p className="brand-sub">
+            A private library for riffs, tunings, and obsessions.
+            <br />
+            Black + purple. Clean. Fast. Yours.
+          </p>
 
-      <form onSubmit={onSubmit} style={{ display: "grid", gap: 10 }}>
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          style={{ padding: 10 }}
-        />
-        <input
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete={mode === "signin" ? "current-password" : "new-password"}
-          style={{ padding: 10 }}
-        />
+          <div className="brand-stats">
+            <div className="stat">
+              <div className="stat-k">SYNC</div>
+              <div className="stat-v">SUPABASE</div>
+            </div>
+            <div className="stat">
+              <div className="stat-k">UI</div>
+              <div className="stat-v">CYBERPUNK</div>
+            </div>
+            <div className="stat">
+              <div className="stat-k">MODE</div>
+              <div className="stat-v">{mode === "login" ? "ACCESS" : "ONBOARD"}</div>
+            </div>
+          </div>
 
-        <button disabled={busy} style={{ padding: 10 }}>
-          {busy ? "Working…" : mode === "signin" ? "Sign in" : "Sign up"}
-        </button>
-      </form>
+          <div className="brand-lines" aria-hidden="true">
+            <div className="scanline" />
+            <div className="scanline s2" />
+            <div className="scanline s3" />
+          </div>
+        </div>
 
-      {msg && <p style={{ marginTop: 12 }}>{msg}</p>}
+        {/* Right: auth card */}
+        <div className="auth-card card glow fade-in">
+          <div className="card-inner">
+            <div className="auth-head">
+              <div>
+                <div className="auth-title">{title}</div>
+                <div className="auth-sub">{subtitle}</div>
+              </div>
 
-      <div style={{ marginTop: 12 }}>
-        {mode === "signin" ? (
-          <button onClick={() => setMode("signup")} style={{ padding: 0, background: "none", border: "none", textDecoration: "underline", cursor: "pointer" }}>
-            Need an account? Sign up
-          </button>
-        ) : (
-          <button onClick={() => setMode("signin")} style={{ padding: 0, background: "none", border: "none", textDecoration: "underline", cursor: "pointer" }}>
-            Already have an account? Sign in
-          </button>
-        )}
+              <div className="auth-toggle" role="tablist" aria-label="Auth mode">
+                <button
+                  className={`pill ${mode === "login" ? "active" : ""}`}
+                  onClick={() => {
+                    setErr(null);
+                    setMsg(null);
+                    setMode("login");
+                  }}
+                  type="button"
+                >
+                  Login
+                </button>
+                <button
+                  className={`pill ${mode === "register" ? "active" : ""}`}
+                  onClick={() => {
+                    setErr(null);
+                    setMsg(null);
+                    setMode("register");
+                  }}
+                  type="button"
+                >
+                  Register
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={onSubmit} className="auth-form">
+              <label className="field">
+                <span>Email</span>
+                <input
+                  className="input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="tofi@night.city"
+                  autoComplete="email"
+                />
+              </label>
+
+              <label className="field">
+                <span>Password</span>
+                <input
+                  className="input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  type="password"
+                  autoComplete={mode === "login" ? "current-password" : "new-password"}
+                />
+              </label>
+
+              {err && <div className="notice error">{err}</div>}
+              {msg && <div className="notice ok">{msg}</div>}
+
+              <button className="btn auth-submit" disabled={loading} type="submit">
+                {loading ? "Working…" : mode === "login" ? "Enter Vault" : "Create Account"}
+              </button>
+
+              <div className="auth-foot">
+                <span className="muted">
+                  {mode === "login" ? "No account?" : "Already have an account?"}
+                </span>
+                <button
+                  type="button"
+                  className="link"
+                  onClick={() => {
+                    setErr(null);
+                    setMsg(null);
+                    setMode(mode === "login" ? "register" : "login");
+                  }}
+                >
+                  {mode === "login" ? "Register" : "Login"}
+                </button>
+              </div>
+            </form>
+
+            <div className="auth-hint">
+              Tip: Use a password manager. Your vault deserves it.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
