@@ -884,16 +884,14 @@ html, body {
 }
 
 .brand-badge {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   border-radius: var(--radius-lg);
   display: grid;
   place-items: center;
   font-family: var(--font-mono);
   font-weight: 800;
   font-size: 24px;
-  border: 2px solid var(--purple);
-  background: var(--bg-elevated);
   position: relative;
   z-index: 1;
   color: var(--purple);
@@ -1283,4 +1281,150 @@ html, body {
     width: 100% !important;
     flex: 0 0 auto !important;
   }
+}
+
+/* Update the brand-badge styles */
+.brand-badge {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-lg);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 24px;
+  position: relative;
+  z-index: 1;
+  color: var(--purple);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible;
+  /* Remove the badgeRotate and badgePulse animations */
+}
+
+.brand-badge:hover {
+  transform: scale(1.05);
+}
+
+.brand-badge:active {
+  transform: scale(0.95);
+}
+
+.sound-bar {
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+/* Line appearing animation */
+.line-appear {
+  animation: lineAppear 0.6s ease both;
+}
+
+@keyframes lineAppear {
+  0% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scaleY(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* When animating, each bar gets its own animation - SLOWER */
+.brand-badge.animating .bar-1 {
+  animation: soundWave1 1.2s ease-in-out infinite;
+}
+
+.brand-badge.animating .bar-2 {
+  animation: soundWave2 1s ease-in-out infinite;
+}
+
+.brand-badge.animating .bar-3 {
+  animation: soundWave3 1.4s ease-in-out infinite;
+}
+
+.brand-badge.animating .bar-4 {
+  animation: soundWave4 0.8s ease-in-out infinite;
+}
+
+.brand-badge.animating .bar-5 {
+  animation: soundWave5 1.2s ease-in-out infinite;
+}
+
+.brand-badge.animating .bar-6 {
+  animation: soundWave6 1.1s ease-in-out infinite;
+}
+
+.brand-badge.animating .bar-7 {
+  animation: soundWave7 0.9s ease-in-out infinite;
+}
+
+.brand-badge.animating .bar-8 {
+  animation: soundWave8 1.3s ease-in-out infinite;
+}
+
+@keyframes soundWave1 {
+  0%, 100% { transform: scaleY(1); }
+  25% { transform: scaleY(1.5); }
+  50% { transform: scaleY(0.8); }
+  75% { transform: scaleY(1.3); }
+}
+
+@keyframes soundWave2 {
+  0%, 100% { transform: scaleY(1); }
+  20% { transform: scaleY(0.7); }
+  40% { transform: scaleY(1.6); }
+  60% { transform: scaleY(0.9); }
+  80% { transform: scaleY(1.4); }
+}
+
+@keyframes soundWave3 {
+  0%, 100% { transform: scaleY(1); }
+  15% { transform: scaleY(1.3); }
+  35% { transform: scaleY(0.6); }
+  55% { transform: scaleY(1.5); }
+  75% { transform: scaleY(0.8); }
+}
+
+@keyframes soundWave4 {
+  0%, 100% { transform: scaleY(1); }
+  30% { transform: scaleY(1.8); }
+  60% { transform: scaleY(0.5); }
+  90% { transform: scaleY(1.2); }
+}
+
+@keyframes soundWave5 {
+  0%, 100% { transform: scaleY(1); }
+  10% { transform: scaleY(0.9); }
+  30% { transform: scaleY(1.4); }
+  50% { transform: scaleY(0.7); }
+  70% { transform: scaleY(1.6); }
+  90% { transform: scaleY(1.1); }
+}
+
+@keyframes soundWave6 {
+  0%, 100% { transform: scaleY(1); }
+  20% { transform: scaleY(1.4); }
+  40% { transform: scaleY(0.8); }
+  60% { transform: scaleY(1.3); }
+  80% { transform: scaleY(0.9); }
+}
+
+@keyframes soundWave7 {
+  0%, 100% { transform: scaleY(1); }
+  25% { transform: scaleY(0.6); }
+  50% { transform: scaleY(1.7); }
+  75% { transform: scaleY(1.1); }
+}
+
+@keyframes soundWave8 {
+  0%, 100% { transform: scaleY(1); }
+  15% { transform: scaleY(1.5); }
+  40% { transform: scaleY(0.7); }
+  65% { transform: scaleY(1.4); }
+  85% { transform: scaleY(0.9); }
 }

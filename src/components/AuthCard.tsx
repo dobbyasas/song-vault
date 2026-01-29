@@ -7,6 +7,8 @@ export function AuthCard() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [lineCount, setLineCount] = useState(5);
 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -17,6 +19,56 @@ export function AuthCard() {
     () => (mode === "login" ? "Enter the vault." : "Generate a new identity."),
     [mode]
   );
+
+  function handleLogoClick() {
+    setIsAnimating(true);
+    setLineCount(prev => Math.min(prev + 3, 50)); // Add 3 lines per click, max 50
+    setTimeout(() => setIsAnimating(false), 5000);
+  }
+
+  // Generate lines dynamically based on lineCount
+  const generateLines = () => {
+    const lines = [];
+    const spacing = 8; // Fixed spacing between lines
+    const totalWidth = (lineCount - 1) * spacing;
+    const startX = 32 - (totalWidth / 2); // Center the lines
+    
+    for (let i = 0; i < lineCount; i++) {
+      const x = startX + (i * spacing);
+      // Random heights for variety
+      const heights = [
+        { y1: 24, y2: 40 },
+        { y1: 20, y2: 44 },
+        { y1: 12, y2: 52 },
+        { y1: 26, y2: 38 },
+        { y1: 16, y2: 48 },
+        { y1: 22, y2: 42 },
+        { y1: 18, y2: 46 },
+        { y1: 14, y2: 50 },
+      ];
+      const height = heights[i % heights.length];
+      
+      lines.push(
+        <line
+          key={i}
+          className={`sound-bar bar-${(i % 8) + 1} line-appear`}
+          x1={x}
+          y1={height.y1}
+          x2={x}
+          y2={height.y2}
+          stroke="#ffffff"
+          strokeWidth="3"
+          strokeLinecap="round"
+          style={{ animationDelay: `${i * 0.05}s` }}
+        />
+      );
+    }
+    
+    return lines;
+  };
+
+  // Calculate the width needed for the logo based on line count
+  const logoWidth = Math.max(80, (lineCount - 1) * 8 + 20);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,13 +109,24 @@ export function AuthCard() {
       <div className="auth-grid">
         {/* Left: brand */}
         <div className="auth-brand fade-in">
-          <div className="brand-badge pulse">
-            <svg width="80" height="80" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="14" y1="24" x2="14" y2="40" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
-              <line x1="22" y1="20" x2="22" y2="44" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
-              <line x1="30" y1="12" x2="30" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
-              <line x1="38" y1="26" x2="38" y2="38" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
-              <line x1="46" y1="16" x2="46" y2="48" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
+          <div 
+            className={`brand-badge pulse ${isAnimating ? 'animating' : ''}`}
+            onClick={handleLogoClick}
+            style={{ 
+              cursor: 'pointer',
+              width: `${logoWidth}px`,
+              transition: 'width 0.5s ease'
+            }}
+          >
+            <svg 
+              width={logoWidth} 
+              height="80" 
+              viewBox="0 0 64 64" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              preserveAspectRatio="xMidYMid meet"
+            >
+              {generateLines()}
             </svg>
           </div>
           <h1 className="brand-title">SONG VAULT</h1>
