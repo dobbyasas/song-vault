@@ -46,7 +46,20 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
   const { data: playlists } = usePlaylists();
   const addToPl = useAddSongToPlaylist();
 
-  const rows = useMemo(() => (inf.data?.pages ?? []).flatMap((p) => p.rows ?? []), [inf.data]);
+  const rows = useMemo(() => {
+  const all = (inf.data?.pages ?? []).flatMap((p) => p.rows ?? []);
+  const seen = new Set<string>();
+  const unique: typeof all = [];
+
+  for (const s of all) {
+    if (seen.has(s.id)) continue;
+    seen.add(s.id);
+    unique.push(s);
+  }
+
+  return unique;
+}, [inf.data]);
+
   const totalCount = inf.data?.pages?.[0]?.count ?? 0;
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -110,7 +123,7 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="tbody">
             {rows.length ? (
               rows.map((s) => (
                 <SongRow

@@ -5,12 +5,20 @@ import { supabase } from "./lib/supabaseClient";
 import { AddSongForm } from "./components/AddSongForm";
 import { SongsTable } from "./components/SongsTable";
 import { PlaylistsSidebar } from "./components/PlaylistsSidebar";
+import { AddSongModal } from "./components/AddSongModal";
 
 export default function App() {
   const { session, loading } = useSession();
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
-  if (loading) return <div className="cyber-shell"><div className="container">Loading…</div></div>;
+  if (loading)
+    return (
+      <div className="cyber-shell">
+        <div className="container">Loading…</div>
+      </div>
+    );
+
   if (!session) return <AuthCard />;
 
   return (
@@ -22,8 +30,13 @@ export default function App() {
             <div className="sub">CYBERPUNK • SUPABASE • REACT</div>
           </div>
 
-          <div className="row">
+          <div className="row" style={{ flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <button className="btn add-open-btn" type="button" onClick={() => setAddOpen(true)}>
+              Add song
+            </button>
+
             <span className="badge">{session.user.email}</span>
+
             <button className="btn btn-ghost" onClick={() => supabase.auth.signOut()}>
               Sign out
             </button>
@@ -32,11 +45,12 @@ export default function App() {
 
         <div className="card fade-in">
           <div className="card-inner">
-            <AddSongForm userId={session.user.id} />
-            <hr className="hr" />
+            <div className="add-card-inline">
+              <AddSongForm userId={session.user.id} />
+              <hr className="hr" />
+            </div>
 
-            {/* Layout: sidebar left, songs right */}
-            <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+            <div className="vault-layout">
               <PlaylistsSidebar
                 userId={session.user.id}
                 selectedPlaylistId={selectedPlaylistId}
@@ -49,6 +63,10 @@ export default function App() {
             </div>
           </div>
         </div>
+
+        <AddSongModal open={addOpen} title="Add song" onClose={() => setAddOpen(false)}>
+          <AddSongForm userId={session.user.id} />
+        </AddSongModal>
       </div>
     </div>
   );
