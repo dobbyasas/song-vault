@@ -61,3 +61,8 @@ table {
     scroll-behavior: auto !important;
   }
 }
+
+body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}

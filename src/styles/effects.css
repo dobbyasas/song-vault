@@ -72,3 +72,10 @@
 .glow {
   box-shadow: var(--glow-purple);
 }
+
+@media (max-width: 640px) {
+  .cyber-shell::before,
+  .cyber-shell::after {
+    display: none;
+  }
+}
