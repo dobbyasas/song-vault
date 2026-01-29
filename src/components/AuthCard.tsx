@@ -42,7 +42,6 @@ export function AuthCard() {
         });
         if (error) throw error;
 
-        // Depending on Supabase email confirmation settings, user may need to confirm.
         setMsg("Account created. If email confirmation is enabled, check your inbox.");
         setMode("login");
       }
@@ -58,12 +57,20 @@ export function AuthCard() {
       <div className="auth-grid">
         {/* Left: brand */}
         <div className="auth-brand fade-in">
-          <div className="brand-badge pulse">SV</div>
+          <div className="brand-badge pulse">
+            <svg width="80" height="80" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="14" y1="24" x2="14" y2="40" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
+              <line x1="22" y1="20" x2="22" y2="44" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
+              <line x1="30" y1="12" x2="30" y2="52" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
+              <line x1="38" y1="26" x2="38" y2="38" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
+              <line x1="46" y1="16" x2="46" y2="48" stroke="#ffffff" strokeWidth="3" strokeLinecap="round"/>
+            </svg>
+          </div>
           <h1 className="brand-title">SONG VAULT</h1>
           <p className="brand-sub">
             A private library for riffs, tunings, and obsessions.
             <br />
-            Black + purple. Clean. Fast. Yours.
+            Clean. Fast. Yours.
           </p>
 
           <div className="brand-stats">
