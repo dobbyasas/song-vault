@@ -45,7 +45,7 @@ export function AuthCard() {
   }, []);
 
   const generateLines = () => {
-    const lines: JSX.Element[] = [];
+    const lines = [];
     const spacing = 8;
     const totalWidth = (lineCount - 1) * spacing;
 
