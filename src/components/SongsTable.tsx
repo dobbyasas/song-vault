@@ -6,6 +6,7 @@ import { useAddSongToPlaylist, usePlaylists, useRemoveSongFromPlaylist } from ".
 import { useInfiniteSongs } from "../hooks/useInfiniteSongs";
 import { useCoverPreview } from "../hooks/useCoverPreview";
 import { CoverModal } from "./CoverModal";
+import { SharePlaylistModal } from "./SharePlaylistModal";
 import { SongRow } from "./SongRow";
 import { SortableTh } from "./SortableTh";
 
@@ -13,6 +14,7 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
   const [q, setQ] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "artist" | "tuning" | "created_at">("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [shareOpen, setShareOpen] = useState(false);
 
   const params = useMemo(
     () => ({
@@ -33,6 +35,11 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
   const addToPl = useAddSongToPlaylist();
 
   const cover = useCoverPreview();
+
+  const selectedPlaylistName = useMemo(() => {
+    if (!playlistId) return null;
+    return (playlists ?? []).find((p) => p.id === playlistId)?.name ?? "Playlist";
+  }, [playlistId, playlists]);
 
   const rows = useMemo(() => {
     const all = (inf.data?.pages ?? []).flatMap((p) => p.rows ?? []);
@@ -76,12 +83,29 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
     }
   }
 
+  useEffect(() => {
+    if (playlistId) return;
+    setShareOpen(false);
+  }, [playlistId]);
+
   if (inf.isLoading) return <div style={{ marginTop: 16 }}>Loading songs…</div>;
   if (inf.error) return <pre style={{ marginTop: 16 }}>{String(inf.error)}</pre>;
 
   return (
     <>
       <div style={{ marginTop: 16 }} className="fade-in">
+        {playlistId ? (
+          <div className="row" style={{ gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
+            <div style={{ fontWeight: 800, fontSize: 30, opacity: 0.95 }}>{selectedPlaylistName}</div>
+            <div style={{ flex: 1 }} />
+            <button className="btn" type="button" onClick={() => setShareOpen(true)}>
+              🔗 Share
+            </button>
+          </div>
+        ) : (
+          <div style={{ marginBottom: 10, opacity: 0.75, fontSize: 13 }}>All songs</div>
+        )}
+
         <div className="row" style={{ gap: 12, alignItems: "center", marginBottom: 12 }}>
           <input
             className="input"
@@ -163,6 +187,8 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
       </div>
 
       <CoverModal open={cover.open} src={cover.src} title={cover.title} loading={cover.loading} onClose={cover.close} />
+
+      <SharePlaylistModal open={shareOpen} playlistId={playlistId} onClose={() => setShareOpen(false)} />
     </>
   );
 }

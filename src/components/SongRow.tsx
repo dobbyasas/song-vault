@@ -35,6 +35,7 @@ export function SongRow({
   onDelete,
   onAddToPlaylist,
   onOpenCover,
+  onSharePlaylist,
   saving,
   deleting,
   adding,
@@ -46,6 +47,7 @@ export function SongRow({
   onDelete: () => void;
   onAddToPlaylist: (playlistId: string) => void;
   onOpenCover: () => void;
+  onSharePlaylist?: () => void;
   saving: boolean;
   deleting: boolean;
   adding: boolean;
@@ -334,6 +336,21 @@ export function SongRow({
             </button>
           )}
 
+          {currentPlaylistId && onSharePlaylist && (
+            <button
+              className="menu-item"
+              onClick={() => {
+                closeMenu();
+                onSharePlaylist();
+              }}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+              title="Share this playlist (read-only link)"
+            >
+              <span>Share playlist</span>
+              <span style={{ opacity: 0.7 }}>🔗</span>
+            </button>
+          )}
+
           <button
             className="menu-item danger"
             onClick={() => {
@@ -396,6 +413,7 @@ export function SongRow({
     deleteConfirm,
     deleteLabel,
     currentPlaylistId,
+    onSharePlaylist,
   ]);
 
   return (
@@ -429,15 +447,9 @@ export function SongRow({
           </button>
         </td>
 
-        <td className="td">
-          {edit ? <input className="input" value={name} onChange={(e) => setName(e.target.value)} /> : song.name}
-        </td>
-        <td className="td">
-          {edit ? <input className="input" value={artist} onChange={(e) => setArtist(e.target.value)} /> : song.artist}
-        </td>
-        <td className="td">
-          {edit ? <input className="input" value={tuning} onChange={(e) => setTuning(e.target.value)} /> : song.tuning ?? ""}
-        </td>
+        <td className="td">{edit ? <input className="input" value={name} onChange={(e) => setName(e.target.value)} /> : song.name}</td>
+        <td className="td">{edit ? <input className="input" value={artist} onChange={(e) => setArtist(e.target.value)} /> : song.artist}</td>
+        <td className="td">{edit ? <input className="input" value={tuning} onChange={(e) => setTuning(e.target.value)} /> : song.tuning ?? ""}</td>
 
         <td className="td" style={{ opacity: 0.75, fontSize: 13 }}>
           {new Date(song.created_at).toLocaleString()}
@@ -449,7 +461,7 @@ export function SongRow({
               <button className="btn" disabled={!canSave || saving} onClick={save}>
                 {saving ? "Saving…" : "Save"}
               </button>
-              <button className="btn btn-ghost" onClick={() => setEdit(false)}>
+              <button className="btn btn-ghost" onClick={cancel}>
                 Cancel
               </button>
             </div>
