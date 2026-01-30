@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useCreateSong } from "../hooks/useCreateSong";
+import { TuningCombo } from "./TuningCombo";
 
 export function AddSongForm({ userId }: { userId: string }) {
   const [name, setName] = useState("");
@@ -46,12 +47,7 @@ export function AddSongForm({ userId }: { userId: string }) {
       <form onSubmit={onSubmit} className="stack">
         <div className="row" style={{ alignItems: "stretch" }}>
           <div style={{ flex: 1 }}>
-            <input
-              className="input"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Song name *"
-            />
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Song name *" />
           </div>
           <div style={{ flex: 1 }}>
             <input
@@ -65,12 +61,7 @@ export function AddSongForm({ userId }: { userId: string }) {
 
         <div className="row" style={{ alignItems: "stretch" }}>
           <div style={{ flex: 1 }}>
-            <input
-              className="input"
-              value={tuning}
-              onChange={(e) => setTuning(e.target.value)}
-              placeholder="Tuning (e.g. Drop C#, Standard, etc.)"
-            />
+            <TuningCombo value={tuning} onChange={setTuning} placeholder="Tuning (pick or type new…)" />
           </div>
 
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 10 }}>
@@ -91,15 +82,11 @@ export function AddSongForm({ userId }: { userId: string }) {
         </div>
 
         {create.error && (
-          <div style={{ color: "crimson", fontSize: 13 }}>
-            {(create.error as any)?.message ?? "Failed to add song"}
-          </div>
+          <div style={{ color: "crimson", fontSize: 13 }}>{(create.error as any)?.message ?? "Failed to add song"}</div>
         )}
 
         {create.isSuccess && !create.isPending && (
-          <div style={{ color: "rgba(53,215,255,0.9)", fontSize: 13 }}>
-            Added ✅ (Spotify matching running…)
-          </div>
+          <div style={{ color: "rgba(53,215,255,0.9)", fontSize: 13 }}>Added ✅ (Spotify matching running…)</div>
         )}
       </form>
     </div>

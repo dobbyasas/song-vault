@@ -27,6 +27,31 @@ function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
+function formatDuration(song: any) {
+  const ms = getDurationMs(song);
+  if (ms == null) return "—";
+  const totalSec = Math.max(0, Math.round(ms / 1000));
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function getDurationMs(song: any): number | null {
+  const a = song?.duration_ms;
+  if (typeof a === "number" && isFinite(a) && a > 0) return a;
+
+  const b = song?.duration_seconds;
+  if (typeof b === "number" && isFinite(b) && b > 0) return b * 1000;
+
+  const c = song?.duration;
+  if (typeof c === "number" && isFinite(c) && c > 0) {
+    return c > 10_000 ? c : c * 1000;
+  }
+
+  return null;
+}
+
+
 export function SongRow({
   song,
   currentPlaylistId,
@@ -451,8 +476,8 @@ export function SongRow({
         <td className="td">{edit ? <input className="input" value={artist} onChange={(e) => setArtist(e.target.value)} /> : song.artist}</td>
         <td className="td">{edit ? <input className="input" value={tuning} onChange={(e) => setTuning(e.target.value)} /> : song.tuning ?? ""}</td>
 
-        <td className="td" style={{ opacity: 0.75, fontSize: 13 }}>
-          {new Date(song.created_at).toLocaleString()}
+        <td className="td" style={{ opacity: 0.75, fontSize: 13, whiteSpace: "nowrap" }}>
+          {formatDuration(song)}
         </td>
 
         <td className="td" style={{ position: "relative", width: 64 }}>

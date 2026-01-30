@@ -8,6 +8,7 @@ export type Song = {
   tuning: string | null;
   spotify_id: string | null;
   image_url: string | null;
+  duration_ms: number | null;
   created_at: string;
 };
 
@@ -51,7 +52,7 @@ export async function fetchSongs(params: SongsQuery): Promise<SongsResult> {
 
   let query = supabase
     .from("songs")
-    .select("id,user_id,name,artist,tuning,spotify_id,image_url,created_at", { count: "exact" });
+    .select("id,user_id,name,artist,tuning,spotify_id,image_url,duration_ms,created_at", { count: "exact" });
 
   if (q.trim()) {
     const like = `%${q.trim()}%`;
@@ -60,7 +61,11 @@ export async function fetchSongs(params: SongsQuery): Promise<SongsResult> {
 
   if (playlistSongIds) query = query.in("id", playlistSongIds);
 
-  query = query.order(sortBy, { ascending: sortDir === "asc", nullsFirst: false });
+  const asc = sortDir === "asc";
+
+  query = query
+    .order(sortBy, { ascending: asc, nullsFirst: false })
+    .order("id", { ascending: asc });
 
   const from = offset;
   const to = offset + limit - 1;
@@ -85,7 +90,7 @@ export async function createSong(input: {
       artist: input.artist,
       tuning: input.tuning ?? null,
     })
-    .select("id,user_id,name,artist,tuning,spotify_id,image_url,created_at")
+    .select("id,user_id,name,artist,tuning,spotify_id,image_url,duration_ms,created_at")
     .single();
 
   if (error) throw error;
@@ -100,7 +105,7 @@ export async function updateSong(
     .from("songs")
     .update(patch)
     .eq("id", id)
-    .select("id,user_id,name,artist,tuning,spotify_id,image_url,created_at")
+    .select("id,user_id,name,artist,tuning,spotify_id,image_url,duration_ms,created_at")
     .single();
 
   if (error) throw error;

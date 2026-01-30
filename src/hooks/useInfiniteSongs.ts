@@ -19,9 +19,9 @@ export function useInfiniteSongs(params: InfiniteSongsParams) {
       });
     },
     getNextPageParam: (lastPage, allPages) => {
-      const loaded = allPages.reduce((sum, p) => sum + (p.rows?.length ?? 0), 0);
       const total = lastPage.count ?? 0;
-      if (loaded >= total) return undefined;
+      const nextOffset = allPages.length * limit;
+      if (nextOffset >= total) return undefined;
       return allPages.length;
     },
     staleTime: 30_000,

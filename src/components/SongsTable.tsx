@@ -5,13 +5,26 @@ import { useDeleteSong } from "../hooks/useDeleteSong";
 import { useAddSongToPlaylist, usePlaylists, useRemoveSongFromPlaylist } from "../hooks/usePlaylists";
 import { useInfiniteSongs } from "../hooks/useInfiniteSongs";
 import { useCoverPreview } from "../hooks/useCoverPreview";
+import { useTunings } from "../hooks/useTunings";
 import { CoverModal } from "./CoverModal";
 import { SharePlaylistModal } from "./SharePlaylistModal";
 import { SongRow } from "./SongRow";
 import { SortableTh } from "./SortableTh";
 
+function formatTotalDurationMs(ms: number) {
+  const totalSec = Math.max(0, Math.round(ms / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${String(s).padStart(2, "0")}s`;
+  return `${s}s`;
+}
+
 export function SongsTable({ playlistId }: { playlistId: string | null }) {
   const [q, setQ] = useState("");
+  const [tuningFilter, setTuningFilter] = useState<string>("__ALL__");
   const [sortBy, setSortBy] = useState<"name" | "artist" | "tuning" | "created_at">("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [shareOpen, setShareOpen] = useState(false);
@@ -35,6 +48,7 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
   const addToPl = useAddSongToPlaylist();
 
   const cover = useCoverPreview();
+  const tunings = useTunings();
 
   const selectedPlaylistName = useMemo(() => {
     if (!playlistId) return null;
@@ -53,7 +67,26 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
     return unique;
   }, [inf.data]);
 
+  const filteredRows = useMemo(() => {
+    if (tuningFilter === "__ALL__") return rows;
+    return rows.filter((r) => (r.tuning ?? "").trim() === tuningFilter);
+  }, [rows, tuningFilter]);
+
   const totalCount = inf.data?.pages?.[0]?.count ?? 0;
+
+  const totalDurationMs = useMemo(() => {
+    let sum = 0;
+    for (const s of filteredRows as any[]) {
+      const ms = s?.duration_ms;
+      if (typeof ms === "number" && isFinite(ms) && ms > 0) sum += ms;
+    }
+    return sum;
+  }, [filteredRows]);
+
+  const totalDurationLabel = useMemo(() => {
+    if (!filteredRows.length) return "";
+    return formatTotalDurationMs(totalDurationMs);
+  }, [filteredRows.length, totalDurationMs]);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -88,18 +121,20 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
     setShareOpen(false);
   }, [playlistId]);
 
-  if (inf.isLoading) return <div style={{ marginTop: 16 }}>Loading songs…</div>;
-  if (inf.error) return <pre style={{ marginTop: 16 }}>{String(inf.error)}</pre>;
+  const showInitialLoading = inf.isLoading && filteredRows.length === 0 && !inf.error;
 
   return (
     <>
       <div style={{ marginTop: 16 }} className="fade-in">
         {playlistId ? (
           <div className="row" style={{ gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
-            <div style={{ fontWeight: 800, fontSize: 30, opacity: 0.95 }}>{selectedPlaylistName}</div>
+            <div style={{ fontWeight: 800, fontSize: 14, opacity: 0.95 }}>{selectedPlaylistName}</div>
+            <span className="badge" style={{ opacity: 0.9 }}>
+              playlist
+            </span>
             <div style={{ flex: 1 }} />
             <button className="btn" type="button" onClick={() => setShareOpen(true)}>
-              🔗 Share
+              Share
             </button>
           </div>
         ) : (
@@ -112,10 +147,26 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Filter by anything (song, artist, tuning)…"
-            style={{ flex: 1 }}
+            style={{ flex: 1, minWidth: 220 }}
           />
+
+          <select
+            className="input"
+            value={tuningFilter}
+            onChange={(e) => setTuningFilter(e.target.value)}
+            style={{ width: 180 }}
+            title="Filter by tuning"
+          >
+            <option value="__ALL__">All tunings</option>
+            {(tunings.data ?? []).map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+
           <span className="badge">
-            {inf.isFetching && !inf.isFetchingNextPage ? "Refreshing…" : `${rows.length}/${totalCount}`}
+            {inf.isFetching && !inf.isFetchingNextPage ? "Refreshing…" : `${filteredRows.length}/${totalCount}`}
           </span>
         </div>
 
@@ -129,19 +180,28 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
                 <SortableTh label="Song" active={sortBy === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
                 <SortableTh label="Artist" active={sortBy === "artist"} dir={sortDir} onClick={() => toggleSort("artist")} />
                 <SortableTh label="Tuning" active={sortBy === "tuning"} dir={sortDir} onClick={() => toggleSort("tuning")} />
-                <SortableTh
-                  label="Added"
-                  active={sortBy === "created_at"}
-                  dir={sortDir}
-                  onClick={() => toggleSort("created_at")}
-                />
+                <th className="th" style={{ width: 86 }}>
+                  Length
+                </th>
                 <th className="th" style={{ width: 64 }} />
               </tr>
             </thead>
 
             <tbody className="tbody">
-              {rows.length ? (
-                rows.map((s: Song) => (
+              {inf.error ? (
+                <tr>
+                  <td className="td" colSpan={6} style={{ padding: 16, color: "crimson", opacity: 0.9 }}>
+                    {String(inf.error)}
+                  </td>
+                </tr>
+              ) : showInitialLoading ? (
+                <tr>
+                  <td className="td" colSpan={6} style={{ padding: 16, opacity: 0.75 }}>
+                    Loading songs…
+                  </td>
+                </tr>
+              ) : filteredRows.length ? (
+                filteredRows.map((s: Song) => (
                   <SongRow
                     key={s.id}
                     song={s}
@@ -172,7 +232,14 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
           <div ref={sentinelRef} style={{ height: 1 }} />
 
           {inf.isFetchingNextPage && <div style={{ padding: 12, opacity: 0.8, fontSize: 13 }}>Loading more…</div>}
-          {!inf.hasNextPage && rows.length > 0 && <div style={{ padding: 12, opacity: 0.6, fontSize: 13 }}>End of list.</div>}
+
+          {!inf.hasNextPage && filteredRows.length > 0 && (
+            <div style={{ padding: 12, opacity: 0.7, fontSize: 13, display: "flex", justifyContent: "flex-end" }}>
+              <span className="badge" title="Total duration">
+                Total: {totalDurationLabel}
+              </span>
+            </div>
+          )}
         </div>
 
         {(update.error || delSong.error || addToPl.error || removeFromPlaylist.error) && (
@@ -187,7 +254,6 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
       </div>
 
       <CoverModal open={cover.open} src={cover.src} title={cover.title} loading={cover.loading} onClose={cover.close} />
-
       <SharePlaylistModal open={shareOpen} playlistId={playlistId} onClose={() => setShareOpen(false)} />
     </>
   );
