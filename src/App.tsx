@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useSession } from "./hooks/useSession";
 import { AuthCard } from "./components/AuthCard";
 import { supabase } from "./lib/supabaseClient";
@@ -6,8 +7,9 @@ import { AddSongForm } from "./components/AddSongForm";
 import { SongsTable } from "./components/SongsTable";
 import { PlaylistsSidebar } from "./components/PlaylistsSidebar";
 import { AddSongModal } from "./components/AddSongModal";
+import PublicPlaylistPage from "./pages/PublicPlaylistPage";
 
-export default function App() {
+function AppAuthed() {
   const { session, loading } = useSession();
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
@@ -69,5 +71,15 @@ export default function App() {
         </AddSongModal>
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/share/playlist/:token" element={<PublicPlaylistPage />} />
+      <Route path="/" element={<AppAuthed />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
