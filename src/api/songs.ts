@@ -14,7 +14,7 @@ export type Song = {
 
 export type SongsQuery = {
   q?: string;
-  sortBy?: "name" | "artist" | "tuning" | "created_at";
+  sortBy?: "name" | "artist" | "tuning" | "created_at" | "duration_ms";
   sortDir?: "asc" | "desc";
   limit?: number;
   offset?: number;

@@ -25,7 +25,7 @@ function formatTotalDurationMs(ms: number) {
 export function SongsTable({ playlistId }: { playlistId: string | null }) {
   const [q, setQ] = useState("");
   const [tuningFilter, setTuningFilter] = useState<string>("__ALL__");
-  const [sortBy, setSortBy] = useState<"name" | "artist" | "tuning" | "created_at">("created_at");
+  const [sortBy, setSortBy] = useState<"name" | "artist" | "tuning" | "created_at" | "duration_ms">("created_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [shareOpen, setShareOpen] = useState(false);
 
@@ -109,10 +109,13 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
   }, [inf.hasNextPage, inf.isFetchingNextPage, inf.fetchNextPage]);
 
   function toggleSort(field: typeof sortBy) {
-    if (field === sortBy) setSortDir(sortDir === "asc" ? "desc" : "asc");
-    else {
+    if (field === sortBy) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
       setSortBy(field);
-      setSortDir(field === "created_at" ? "desc" : "asc");
+      if (field === "created_at") setSortDir("desc");
+      else if (field === "duration_ms") setSortDir("desc");
+      else setSortDir("asc");
     }
   }
 
@@ -180,9 +183,7 @@ export function SongsTable({ playlistId }: { playlistId: string | null }) {
                 <SortableTh label="Song" active={sortBy === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
                 <SortableTh label="Artist" active={sortBy === "artist"} dir={sortDir} onClick={() => toggleSort("artist")} />
                 <SortableTh label="Tuning" active={sortBy === "tuning"} dir={sortDir} onClick={() => toggleSort("tuning")} />
-                <th className="th" style={{ width: 86 }}>
-                  Length
-                </th>
+                <SortableTh label="Length" active={sortBy === "duration_ms"} dir={sortDir} onClick={() => toggleSort("duration_ms")}/>
                 <th className="th" style={{ width: 64 }} />
               </tr>
             </thead>
