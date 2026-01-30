@@ -41,87 +41,152 @@ export default function PublicPlaylistPage() {
   const { token } = useParams();
   const q = usePublicPlaylist(token);
 
+  const playlistName = q.data?.playlist?.name ?? "Shared playlist";
+  const songs = q.data?.songs ?? [];
+
   const totalMs = useMemo(() => {
-    const songs = q.data?.songs ?? [];
     let sum = 0;
     for (const s of songs as any[]) {
       const ms = s?.duration_ms;
       if (typeof ms === "number" && isFinite(ms) && ms > 0) sum += ms;
     }
     return sum;
-  }, [q.data?.songs]);
+  }, [songs]);
 
-  if (q.isLoading) return <div style={{ padding: 18 }}>Loading playlist…</div>;
-  if (q.error || !q.data) return <div style={{ padding: 18, color: "crimson" }}>This link is invalid or disabled.</div>;
-
-  const { playlist, songs } = q.data;
-
-  return (
-    <div style={{ padding: 18 }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-        <div>
-          <div style={{ fontSize: 22, fontWeight: 800 }}>{playlist.name}</div>
-          <div style={{ opacity: 0.7, fontSize: 13 }}>Read-only shared playlist</div>
-        </div>
-
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ opacity: 0.75, fontSize: 13 }}>{songs.length} songs</span>
-          <span className="badge" style={{ borderColor: "rgba(53,215,255,0.35)" }}>
-            Total: {songs.length ? formatTotalDurationMs(totalMs) : "—"}
-          </span>
+  if (q.isLoading) {
+    return (
+      <div className="cyber-shell">
+        <div className="container" style={{ paddingTop: 28 }}>
+          Loading playlist…
         </div>
       </div>
+    );
+  }
 
-      <div style={{ marginTop: 14 }} className="table-wrap">
-        <table className="table">
-          <thead className="thead">
-            <tr>
-              <th className="th" style={{ width: 72 }}>
-                Art
-              </th>
-              <th className="th">Song</th>
-              <th className="th">Artist</th>
-              <th className="th">Tuning</th>
-              <th className="th" style={{ width: 90 }}>
-                Length
-              </th>
-            </tr>
-          </thead>
+  if (q.error || !q.data) {
+    return (
+      <div className="cyber-shell">
+        <div className="container" style={{ paddingTop: 28 }}>
+          <div className="card fade-in">
+            <div className="card-inner">
+              <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>This link is invalid or disabled.</div>
+              <div style={{ opacity: 0.7, fontSize: 13 }}>Ask the owner to generate a new share link.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-          <tbody className="tbody">
-            {songs.length ? (
-              songs.map((s) => (
-                <tr key={s.id} className="tr">
-                  <td className="td">
-                    <div style={{ width: 56, height: 56 }}>
-                      <img
-                        src={s.image_url || FALLBACK_COVER}
-                        width={56}
-                        height={56}
-                        className="cover"
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    </div>
-                  </td>
-                  <td className="td">{s.name}</td>
-                  <td className="td">{s.artist}</td>
-                  <td className="td">{s.tuning ?? ""}</td>
-                  <td className="td" style={{ opacity: 0.75, fontSize: 13, whiteSpace: "nowrap" }}>
-                    {formatDurationMs((s as any).duration_ms)}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td className="td" colSpan={5} style={{ padding: 16, opacity: 0.75 }}>
-                  This playlist is empty.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+  return (
+    <div className="cyber-shell">
+      <div className="container fade-in">
+        <div className="cyber-topbar" style={{ alignItems: "flex-start" }}>
+          <div className="cyber-title" style={{ minWidth: 0 }}>
+            <h1 className="pulse" style={{ marginBottom: 6, lineHeight: 1.05 }}>
+              {playlistName}
+            </h1>
+            <div className="sub">SHARED • READ-ONLY</div>
+          </div>
+
+          <div className="row" style={{ flexWrap: "wrap", justifyContent: "flex-end", gap: 10 }}>
+            <span className="badge">Songs: {songs.length}</span>
+            <span className="badge" style={{ borderColor: "rgba(53,215,255,0.35)" }}>
+              Total: {songs.length ? formatTotalDurationMs(totalMs) : "—"}
+            </span>
+          </div>
+        </div>
+
+        <div className="card fade-in">
+          <div className="card-inner">
+            <div
+              className="row"
+              style={{
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 12,
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ fontFamily: "var(--mono)", letterSpacing: "0.12em", fontSize: 12, color: "var(--muted)" }}>
+                PLAYLIST CONTENTS
+              </div>
+
+              <div style={{ opacity: 0.7, fontSize: 13 }}>
+                View-only link • no login required
+              </div>
+            </div>
+
+            <div className="table-wrap">
+              <table className="table">
+                <thead className="thead">
+                  <tr>
+                    <th className="th" style={{ width: 72 }}>
+                      Art
+                    </th>
+                    <th className="th">Song</th>
+                    <th className="th">Artist</th>
+                    <th className="th">Tuning</th>
+                    <th className="th" style={{ width: 92 }}>
+                      Length
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody className="tbody">
+                  {songs.length ? (
+                    songs.map((s: any) => (
+                      <tr key={s.id} className="tr" style={{ cursor: "default" }}>
+                        <td className="td">
+                          <div style={{ position: "relative", width: 56, height: 56 }}>
+                            <img
+                              src={s.image_url || FALLBACK_COVER}
+                              width={56}
+                              height={56}
+                              className="cover"
+                              alt=""
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </div>
+                        </td>
+
+                        <td className="td" style={{ maxWidth: 520 }}>
+                          <div style={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {s.name}
+                          </div>
+                        </td>
+
+                        <td className="td" style={{ opacity: 0.9 }}>
+                          {s.artist}
+                        </td>
+
+                        <td className="td" style={{ opacity: 0.85 }}>
+                          {s.tuning ?? ""}
+                        </td>
+
+                        <td className="td" style={{ opacity: 0.75, fontSize: 13, whiteSpace: "nowrap" }}>
+                          {formatDurationMs(s.duration_ms)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td className="td" colSpan={5} style={{ padding: 16, opacity: 0.75 }}>
+                        This playlist is empty.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ marginTop: 12, opacity: 0.6, fontSize: 12 }}>
+              Powered by Song Vault
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
