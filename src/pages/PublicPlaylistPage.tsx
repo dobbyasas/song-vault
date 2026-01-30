@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { usePublicPlaylist } from "../hooks/usePublicPlaylist";
 
@@ -17,24 +18,58 @@ const FALLBACK_COVER =
   </svg>
 `);
 
+function formatDurationMs(ms: number | null | undefined) {
+  if (typeof ms !== "number" || !isFinite(ms) || ms <= 0) return "—";
+  const totalSec = Math.round(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function formatTotalDurationMs(ms: number) {
+  const totalSec = Math.max(0, Math.round(ms / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  const s = totalSec % 60;
+
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${String(s).padStart(2, "0")}s`;
+  return `${s}s`;
+}
+
 export default function PublicPlaylistPage() {
   const { token } = useParams();
   const q = usePublicPlaylist(token);
 
-  if (q.isLoading) return <div style={{ padding: 18 }}>Loading playlist…</div>;
-  if (q.error) return <div style={{ padding: 18, color: "crimson" }}>This link is invalid or disabled.</div>;
+  const totalMs = useMemo(() => {
+    const songs = q.data?.songs ?? [];
+    let sum = 0;
+    for (const s of songs as any[]) {
+      const ms = s?.duration_ms;
+      if (typeof ms === "number" && isFinite(ms) && ms > 0) sum += ms;
+    }
+    return sum;
+  }, [q.data?.songs]);
 
-  const { playlist, songs } = q.data!;
+  if (q.isLoading) return <div style={{ padding: 18 }}>Loading playlist…</div>;
+  if (q.error || !q.data) return <div style={{ padding: 18, color: "crimson" }}>This link is invalid or disabled.</div>;
+
+  const { playlist, songs } = q.data;
 
   return (
     <div style={{ padding: 18 }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div>
           <div style={{ fontSize: 22, fontWeight: 800 }}>{playlist.name}</div>
           <div style={{ opacity: 0.7, fontSize: 13 }}>Read-only shared playlist</div>
         </div>
 
-        <div style={{ opacity: 0.75, fontSize: 13 }}>{songs.length} songs</div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ opacity: 0.75, fontSize: 13 }}>{songs.length} songs</span>
+          <span className="badge" style={{ borderColor: "rgba(53,215,255,0.35)" }}>
+            Total: {songs.length ? formatTotalDurationMs(totalMs) : "—"}
+          </span>
+        </div>
       </div>
 
       <div style={{ marginTop: 14 }} className="table-wrap">
@@ -47,6 +82,9 @@ export default function PublicPlaylistPage() {
               <th className="th">Song</th>
               <th className="th">Artist</th>
               <th className="th">Tuning</th>
+              <th className="th" style={{ width: 90 }}>
+                Length
+              </th>
             </tr>
           </thead>
 
@@ -70,11 +108,14 @@ export default function PublicPlaylistPage() {
                   <td className="td">{s.name}</td>
                   <td className="td">{s.artist}</td>
                   <td className="td">{s.tuning ?? ""}</td>
+                  <td className="td" style={{ opacity: 0.75, fontSize: 13, whiteSpace: "nowrap" }}>
+                    {formatDurationMs((s as any).duration_ms)}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td className="td" colSpan={4} style={{ padding: 16, opacity: 0.75 }}>
+                <td className="td" colSpan={5} style={{ padding: 16, opacity: 0.75 }}>
                   This playlist is empty.
                 </td>
               </tr>
