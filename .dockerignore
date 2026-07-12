@@ -1,0 +1,11 @@
+.git
+.gitignore
+.DS_Store
+node_modules
+dist
+dist-ssr
+coverage
+*.log
+.env
+.env.local
+vault-backfill/node_modules
